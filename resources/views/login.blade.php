@@ -9,7 +9,7 @@
     <meta http-equiv="Cache-Control" content="no-siteapp" />
     <link rel="stylesheet" href="./css/font.css">
     <link rel="stylesheet" href="./css/login.css">
-	  <link rel="stylesheet" href="./css/xadmin.css">
+    <link rel="stylesheet" href="./css/xadmin.css">
     <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
     <script src="./lib/layui/layui.js" charset="utf-8"></script>
     <!--[if lt IE 9]>
@@ -20,10 +20,10 @@
 <body class="login-bg">
 
     <div class="login layui-anim layui-anim-up">
-        <div class="message">x-admin2.0-管理登录</div>
+        <div class="message">分单系统登录</div>
         <div id="darkbannerwrap"></div>
 
-        <form method="post" class="layui-form" >
+        <form method="post" class="layui-form" action="doLogin">
             <input name="username" placeholder="用户名"  type="text" lay-verify="required" class="layui-input" >
             <hr class="hr15">
             <input name="password" lay-verify="required" placeholder="密码"  type="password" class="layui-input">

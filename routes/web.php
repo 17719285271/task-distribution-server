@@ -12,7 +12,11 @@
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('index');
 });
 
 Route::view('/login', "login");
+
+Route::any("addTask", 'TaskController@addTask');
+
+Route::any("shopImgUpload", 'UploadController@shopImgUpload');
