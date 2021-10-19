@@ -19,14 +19,12 @@ class TaskService
             $taskBaseInfo->task_require = $params["taskRequire"];
             $taskBaseInfo->commission = $params["commission"];
             $taskBaseInfo->create_user = 1;
-            $taskBaseInfo->phone_price = $params["phonePrice"];
             $taskBaseInfo->product_type = $params["productType"];
             $taskBaseInfo->img = $params["fileName"];
             $taskBaseInfo->save($params);
             $this->saveTaskExtend($taskBaseInfo->task_id, $extends);
         } catch (\Exception $exception) {
             DB::rollBack();
-            var_dump($exception->getMessage());
             return false;
         }
 
@@ -63,5 +61,21 @@ class TaskService
         }
 
         return $extends;
+    }
+
+    /**
+     * 分页获取任务列表
+     * @param $params
+     */
+    public function taskPage($params) {
+        $where = [];
+        foreach ($params as $k => $param) {
+            if (null != $param) {
+                $w = [$k => $param];
+                array_push($where, $w);
+            }
+        }
+
+        TaskBaseInfo::where($where)->paginate(15);
     }
 }

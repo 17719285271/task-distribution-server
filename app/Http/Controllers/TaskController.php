@@ -32,4 +32,14 @@ class TaskController extends Controller
 
         }
     }
+
+    /**
+     * 分页获取任务列表
+     * @param Request $request
+     * @return mixed
+     */
+    public function taskPage(Request $request) {
+        $pageData = $this->taskService->taskPage($request->all());
+        return view("taskPage", $pageData);
+    }
 }

@@ -17,6 +17,10 @@ Route::get('/', function () {
 
 Route::view('/login', "login");
 
-Route::any("addTask", 'TaskController@addTask');
+Route::any("addTask", "TaskController@addTask");
 
-Route::any("shopImgUpload", 'UploadController@shopImgUpload');
+Route::any("shopImgUpload", "UploadController@shopImgUpload");
+
+Route::any("taskPage", "TaskController@taskPage");
+
+Route::post("taskGeneration", "TaskController@taskGeneration");
