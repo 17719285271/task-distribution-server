@@ -17,10 +17,17 @@ Route::get('/', function () {
 
 Route::view('/login', "login");
 
+//添加任务
 Route::any("addTask", "TaskController@addTask");
 
-Route::any("shopImgUpload", "UploadController@shopImgUpload");
+//上传文件
+Route::any("fileUpload", "UploadController@fileUpload");
 
+//任务列表页
 Route::any("taskPage", "TaskController@taskPage");
 
-Route::post("taskGeneration", "TaskController@taskGeneration");
+//生成任务分配记录
+Route::any("taskGeneration", "TaskController@taskGeneration");
+
+//添加生成任务（选择任务与选择刷手文件）
+Route::any("assignTask", "TaskController@assignTask");

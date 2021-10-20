@@ -169,9 +169,6 @@
                             }
                         }
                     });
-                    console.log(data);
-                    //发异步，把数据提交给php
-
                     return false;
                 });
 
@@ -213,7 +210,7 @@
         //拖拽上传
         var uploadInst = upload.render({
             elem: '#headImg',
-            url: '/shopImgUpload',
+            url: 'fileUpload?type=1',
             size: 500,
             before: function (obj) {
                 //预读本地文件示例，不支持ie8

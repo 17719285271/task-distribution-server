@@ -39,7 +39,36 @@ class TaskController extends Controller
      * @return mixed
      */
     public function taskPage(Request $request) {
-        $pageData = $this->taskService->taskPage($request->all());
-        return view("taskPage", $pageData);
+        $params = $request->all();
+        $pageData = $this->taskService->taskPage($params);
+        return view("taskPage", ["pageData" => $pageData, "params" => $params]);
+    }
+
+
+    /**
+     * 任务分配
+     * @param Request $request
+     * @return view
+     */
+    public function assignTask(Request $request)
+    {
+        $taskId = $request->taskId;
+        if (is_null($taskId)) {
+            return $this->error(-1, "请至少选择一个任务");
+        }
+
+        $taskIdArray = explode(",", $taskId);
+        return view("assignTask", ["taskId" => $taskIdArray, "needHands" => $this->taskService->getNeedHands($taskIdArray)]);
+    }
+
+    public function taskGeneration(Request $request)
+    {
+        $params = $request->all();
+        if (count($params["taskId"]) <= 0 || !isset($params["fileName"])) {
+            return $this->error(-1, "参数错误，请检查文件");
+        }
+
+        return $this->taskService->taskGeneration($params);
+
     }
 }

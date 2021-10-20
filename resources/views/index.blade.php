@@ -68,7 +68,7 @@
                     </li>
 
                     <li>
-                        <a href="javascript:;">
+                        <a onclick="xadmin.add_tab('任务分配','taskPage')">
                             <i class="iconfont left-nav-li" lay-tips="订单管理">&#xe723;</i>
                             <cite>任务分配</cite>
                             </a>
@@ -91,18 +91,6 @@
                             <i class="iconfont left-nav-li" lay-tips="订单管理">&#xe723;</i>
                             <cite>下载中心</cite>
                             </a>
-{{--                        <ul class="sub-menu">--}}
-{{--                            <li>--}}
-{{--                                <a onclick="xadmin.add_tab('订单列表','/')">--}}
-{{--                                    <i class="iconfont">&#xe6a7;</i>--}}
-{{--                                    <cite>订单列表</cite></a>--}}
-{{--                            </li>--}}
-{{--                            <li>--}}
-{{--                                <a onclick="xadmin.add_tab('订单列表1','order-list1.html')">--}}
-{{--                                    <i class="iconfont">&#xe6a7;</i>--}}
-{{--                                    <cite>订单列表1</cite></a>--}}
-{{--                            </li>--}}
-{{--                        </ul>--}}
                     </li>
                 </ul>
             </div>

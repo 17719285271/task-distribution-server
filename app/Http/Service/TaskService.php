@@ -1,13 +1,21 @@
 <?php
+
 namespace App\Http\Service;
 
 use App\Model\TaskBaseInfo;
 use App\Model\TaskExtendInfo;
+use App\Model\TaskGenerationRecord;
+use App\Util\ResponseTrait;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TaskService
 {
-    public function addTask($params) {
+    use ResponseTrait;
+
+    public function addTask($params)
+    {
         $extends = $this->initExtendParams($params["key"], $params["amount"], $params["quantity"]);
         DB::beginTransaction();
         try {
@@ -32,7 +40,8 @@ class TaskService
         return true;
     }
 
-    private function saveTaskExtend($taskId, $extends) {
+    private function saveTaskExtend($taskId, $extends)
+    {
         if (null == $taskId || null == $extends) {
             throw new \HttpInvalidParamException("参数错误");
         }
@@ -53,7 +62,8 @@ class TaskService
      * @param $quantitys
      * @return array
      */
-    private function initExtendParams($keys, $amounts, $quantitys) {
+    private function initExtendParams($keys, $amounts, $quantitys)
+    {
         $extends = [];
         for ($i = 0; $i < count($keys); $i++) {
             $extend = ["key" => $keys[$i], "amount" => $amounts[$i], "quantity" => $quantitys[$i]];
@@ -67,15 +77,74 @@ class TaskService
      * 分页获取任务列表
      * @param $params
      */
-    public function taskPage($params) {
+    public function taskPage($params)
+    {
         $where = [];
-        foreach ($params as $k => $param) {
-            if (null != $param) {
-                $w = [$k => $param];
-                array_push($where, $w);
-            }
+        if (isset($params["startDate"]) && !is_null($params["startDate"])) {
+            $where[] = ["created_at", ">=", $params["startDate"]];
         }
 
-        TaskBaseInfo::where($where)->paginate(15);
+        if (isset($params["endDate"]) && !is_null($params["endDate"])) {
+            $where[] = ["created_at", "<=", $params["endDate"]];
+        }
+
+        if (isset($params["businessName"]) && !is_null($params["businessName"])) {
+            $where[] = ["business_name", "like", "%" . $params["businessName"] . "%"];
+        }
+
+        return TaskBaseInfo::where($where)->orderBy("created_at", "desc")->paginate(15)->appends($params);
+    }
+
+
+    /**
+     * 根据任务id获取所需刷手数量
+     * @param array $taskId
+     * @return mixed
+     */
+    public function getNeedHands(array $taskId)
+    {
+        return TaskExtendInfo::whereIn("task_id", $taskId)->max("quantity");
+    }
+
+    /**
+     * @throws \PHPExcel_Reader_Exception
+     * @throws \PHPExcel_Exception
+     */
+    public function taskGeneration($params)
+    {
+        $utilService = new UtilService();
+        $handsData = $utilService->verifyHandsNumAndGetData($params["fileName"], $this->getNeedHands($params["taskId"]));
+        if (!$handsData) {
+            return $this->error(-1, "刷手人数不足，请确认文件内容");
+        }
+
+        DB::beginTransaction();
+        try {
+            $record = new TaskGenerationRecord;
+            $record->create_user = 1;
+            $record->hands_file = $params["fileName"];
+            $record->save();
+
+            $recordTaskArray = [];
+            foreach ($params["taskId"] as $id) {
+                array_push($recordTaskArray, ["record_id" => $record->record_id, "task_id" => $id]);
+            }
+            DB::table("generation_record_task")->insert($recordTaskArray);
+
+            $recordHandsArray = [];
+            foreach ($handsData as $handsDatum) {
+                array_push($recordHandsArray, ["record_id" => $record->record_id, "hands_name" => $handsDatum]);
+            }
+            DB::table("generation_record_hands")->insert($recordHandsArray);
+
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            $message = $exception->getMessage();
+            Log::error("[service] taskGeneration 入库错误：$message");
+            return $this->error(-1, "构建任务错误，请稍后重试");
+        }
+
+        DB::commit();
+        return $this->success();
     }
 }
