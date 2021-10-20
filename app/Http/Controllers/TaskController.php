@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Http\Service\MakeService;
 use App\Http\Service\TaskService;
 use Illuminate\Http\Request;
 
@@ -8,9 +9,12 @@ class TaskController extends Controller
 {
     private $taskService;
 
+    private $makeService;
+
     public function __construct()
     {
         $this->taskService = new TaskService();
+        $this->makeService = new MakeService();
     }
 
     /**
@@ -61,6 +65,13 @@ class TaskController extends Controller
         return view("assignTask", ["taskId" => $taskIdArray, "needHands" => $this->taskService->getNeedHands($taskIdArray)]);
     }
 
+    /**
+     * 任务分配
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \PHPExcel_Exception
+     * @throws \PHPExcel_Reader_Exception
+     */
     public function taskGeneration(Request $request)
     {
         $params = $request->all();
@@ -69,6 +80,13 @@ class TaskController extends Controller
         }
 
         return $this->taskService->taskGeneration($params);
+    }
 
+    /**
+     * 生成任务文件
+     */
+    public function makeTaskDir()
+    {
+        return $this->makeService->makeTaskDir();
     }
 }

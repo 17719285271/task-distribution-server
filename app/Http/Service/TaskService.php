@@ -129,12 +129,14 @@ class TaskService
             foreach ($params["taskId"] as $id) {
                 array_push($recordTaskArray, ["record_id" => $record->record_id, "task_id" => $id]);
             }
+
             DB::table("generation_record_task")->insert($recordTaskArray);
 
             $recordHandsArray = [];
             foreach ($handsData as $handsDatum) {
                 array_push($recordHandsArray, ["record_id" => $record->record_id, "hands_name" => $handsDatum]);
             }
+
             DB::table("generation_record_hands")->insert($recordHandsArray);
 
         } catch (\Exception $exception) {
@@ -145,6 +147,6 @@ class TaskService
         }
 
         DB::commit();
-        return $this->success();
+        return $this->success("任务分配成功，请稍后移步至下载中心查看");
     }
 }

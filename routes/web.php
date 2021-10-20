@@ -31,3 +31,6 @@ Route::any("taskGeneration", "TaskController@taskGeneration");
 
 //添加生成任务（选择任务与选择刷手文件）
 Route::any("assignTask", "TaskController@assignTask");
+
+//生成任务文件
+Route::any("makeTaskDir", "TaskController@makeTaskDir");
