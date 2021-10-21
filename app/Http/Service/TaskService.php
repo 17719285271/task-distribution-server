@@ -6,7 +6,6 @@ use App\Model\TaskBaseInfo;
 use App\Model\TaskExtendInfo;
 use App\Model\TaskGenerationRecord;
 use App\Util\ResponseTrait;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -103,10 +102,42 @@ class TaskService
      */
     public function getNeedHands(array $taskId)
     {
-        return TaskExtendInfo::whereIn("task_id", $taskId)->max("quantity");
+        $needHand = 0;
+        $taskData = TaskBaseInfo::find($taskId);
+        foreach ($taskData as $key => $task) {
+            $taskData[$key]["extendInfo"] = TaskExtendInfo::where("task_id", $task->task_id)->get();
+        }
+
+        //计算店铺与类目数量
+        $countArray = [];
+        foreach ($taskData as $datum) {
+            $countArray["business"][$datum->business_name] = [$datum->task_id];
+            $countArray["type"][$datum->product_type] = [$datum->task_id];
+        }
+
+        $businessCount = count($countArray["business"]);
+        $typeCount = count($countArray["type"]);
+        //如果有店铺或类目数量为1 则有多少单就需要多少刷手
+        if ($businessCount == 1 || $typeCount == 1) {
+            $minDataTaskIds = $taskId;
+        } else {
+            //否则 取最小的一个有多少单 那就需要多少个刷手
+            $minDataTaskIds = $businessCount <= $typeCount ? $countArray["business"] : $countArray["type"];
+        }
+
+        foreach ($taskData as $taskDatum) {
+            if (in_array($taskDatum->task_id, $minDataTaskIds)) {
+                foreach ($taskDatum["extendInfo"] as $extend) {
+                    $needHand += $extend->quantity;
+                }
+            }
+        }
+
+        return $needHand;
     }
 
     /**
+     * 生成任务
      * @throws \PHPExcel_Reader_Exception
      * @throws \PHPExcel_Exception
      */
@@ -131,14 +162,13 @@ class TaskService
             }
 
             DB::table("generation_record_task")->insert($recordTaskArray);
-
             $recordHandsArray = [];
             foreach ($handsData as $handsDatum) {
                 array_push($recordHandsArray, ["record_id" => $record->record_id, "hands_name" => $handsDatum]);
             }
 
             DB::table("generation_record_hands")->insert($recordHandsArray);
-
+            DB::table("task_base_info")->whereIn("task_id", $params["taskId"])->update(["is_generation" => 1]);
         } catch (\Exception $exception) {
             DB::rollBack();
             $message = $exception->getMessage();

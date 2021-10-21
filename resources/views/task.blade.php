@@ -28,7 +28,7 @@
                 <label for="username" class="layui-form-label">
                     <span class="x-red">*</span>店铺名称</label>
                 <div class="layui-input-inline">
-                    <input type="text" id="shopName" name="shopName" required="必须输入店铺名称" lay-verify="required"
+                    <input type="text" id="shopName" name="shopName" lay-verify="required"
                            autocomplete="off" class="layui-input"></div>
             </div>
 
@@ -37,7 +37,7 @@
                 <label for="username" class="layui-form-label">
                     <span class="x-red">*</span>产品连接</label>
                 <div class="layui-input-inline">
-                    <input type="text" id="productUrl" name="productUrl" required="必须输入产品链接" lay-verify="required"
+                    <input type="text" id="productUrl" name="productUrl" lay-verify="required"
                            autocomplete="off" class="layui-input"></div>
             </div>
 

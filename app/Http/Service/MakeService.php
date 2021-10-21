@@ -11,9 +11,13 @@ use Illuminate\Support\Facades\Log;
 class MakeService
 {
 
-    public function makeTaskDir()
+    public function makeTaskFile()
     {
         $record = TaskGenerationRecord::where("status", 1)->orderBy("created_at", "desc")->first();
+        if (null == $record) {
+            return false;
+        }
+
         $recordId = $record->record_id;
         Log::info("开始生成任务文件，记录id：$recordId");
 //       $record->status = 2;
@@ -21,7 +25,9 @@ class MakeService
 
         $taskIds = $this->getTasks($recordId);
         $hands = $this->getHands($recordId);
-        return $this->initHandsData($taskIds, $hands);
+        $handsData = $this->initHandsData($taskIds, $hands);
+        $utilService = new UtilService();
+        $utilService->makeHandsExcel($handsData, $recordId);
     }
 
     /**
@@ -67,6 +73,7 @@ class MakeService
         $taskInfoArray = TaskBaseInfo::find($taskIds);
         $countHandsNum = count($hands) - 1;
         $data = [];
+
         foreach ($taskInfoArray as $item) {
             $extendInfoArray = TaskExtendInfo::where("task_id", $item["task_id"])->get();
             $currentHandsNum = 0;
@@ -77,7 +84,9 @@ class MakeService
                         $data[$hands[$currentHandsNum]] = [];
                     }
 
-                    array_push($data[$hands[$currentHandsNum]], ["num" => count($data[$hands[$currentHandsNum]]) + 1, "key" => $value->key, "img" => $item->img, "taskRequire" => $item->task_require, "phonePrice" => $item->phone_price, "businessName" => $item->business_name]);
+                    if (empty($data[$hands[$currentHandsNum]]) || $data[$hands[$currentHandsNum]][count($data[$hands[$currentHandsNum]]) - 1]["productType"] != $item->product_type && $data[$hands[$currentHandsNum]][count($data[$hands[$currentHandsNum]]) - 1]["businessName"] != $item->business_name) {
+                        array_push($data[$hands[$currentHandsNum]], ["num" => count($data[$hands[$currentHandsNum]]) + 1, "key" => $value->key, "img" => $item->img, "taskRequire" => $item->task_require, "phonePrice" => $item->phone_price, "businessName" => $item->business_name, "productType" => $item->product_type, "commission" => $item->commission]);
+                    }
 
                     //增加刷手键值索引
                     $currentHandsNum = $countHandsNum == $currentHandsNum ? 0 : ++$currentHandsNum;

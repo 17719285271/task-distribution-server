@@ -85,8 +85,8 @@ class TaskController extends Controller
     /**
      * 生成任务文件
      */
-    public function makeTaskDir()
+    public function makeTaskFile()
     {
-        return $this->makeService->makeTaskDir();
+        return $this->makeService->makeTaskFile();
     }
 }

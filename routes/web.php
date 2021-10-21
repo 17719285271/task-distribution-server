@@ -33,4 +33,4 @@ Route::any("taskGeneration", "TaskController@taskGeneration");
 Route::any("assignTask", "TaskController@assignTask");
 
 //生成任务文件
-Route::any("makeTaskDir", "TaskController@makeTaskDir");
+Route::any("makeTaskFile", "TaskController@makeTaskFile");
