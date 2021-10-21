@@ -94,8 +94,11 @@ class UtilService
             $allCommission = 0;
             foreach ($datum as $v) {
                 $allMoney += $v["phonePrice"];
-                $allCommission += $v["commission"];
+                foreach ($v as $extendValue) {
+                    $allCommission += $extendValue["amount"];
+                }
             }
+
             $objPHPExcel->getActiveSheet()->setCellValue("B1", count($datum));
             $objPHPExcel->getActiveSheet()->setCellValue("B2", $allMoney);
             $objPHPExcel->getActiveSheet()->setCellValue("B3", $allCommission);
@@ -112,6 +115,7 @@ class UtilService
             $objPHPExcel->getActiveSheet()->setCellValue("F6", "商家名称");
             $objPHPExcel->getActiveSheet()->setCellValue("G6", "产品类目");
             $objPHPExcel->getActiveSheet()->setCellValue("H6", "该笔佣金");
+            $objPHPExcel->getActiveSheet()->setCellValue("H7", "单价");
             $objPHPExcel->getActiveSheet()->getStyle('A6:H6')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
             $objPHPExcel->getActiveSheet()->getStyle('A6:H6')->getFont()->setBold(true);
 

@@ -99,7 +99,7 @@ class MakeService
                     }
 
                     if (empty($data[$hands[$currentHandsNum]]) || $data[$hands[$currentHandsNum]][count($data[$hands[$currentHandsNum]]) - 1]["productType"] != $item->product_type && $data[$hands[$currentHandsNum]][count($data[$hands[$currentHandsNum]]) - 1]["businessName"] != $item->business_name) {
-                        array_push($data[$hands[$currentHandsNum]], ["num" => count($data[$hands[$currentHandsNum]]) + 1, "key" => $value->key, "img" => $item->img, "taskRequire" => $item->task_require, "phonePrice" => $item->phone_price, "businessName" => $item->business_name, "productType" => $item->product_type, "commission" => $item->commission]);
+                        array_push($data[$hands[$currentHandsNum]], ["num" => count($data[$hands[$currentHandsNum]]) + 1, "key" => $value->key, "img" => $item->img, "taskRequire" => $item->task_require, "phonePrice" => $item->phone_price -100 . "-" . $item->phone_price + 100, "businessName" => $item->business_name, "productType" => $item->product_type, "commission" => $item->commission, "amount" => $value["amount"]]);
                     }
 
                     //增加刷手键值索引
@@ -125,6 +125,5 @@ class MakeService
         File::makeDirectory($dirName . "/" . "统计", 0755, true);
 
         return ["worker" => $dirName . "/" . "刷手" . "/", "business" => $dirName . "/" . "商家" . "/", "count" => $dirName . "/" . "统计" . "/", "path" => $dirName];
-
     }
 }
