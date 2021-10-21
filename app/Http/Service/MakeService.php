@@ -6,10 +6,17 @@ use App\Model\TaskBaseInfo;
 use App\Model\TaskExtendInfo;
 use App\Model\TaskGenerationRecord;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 class MakeService
 {
+    private $taskExcelPath;
+
+    public function __construct()
+    {
+        $this->taskExcelPath = public_path() . "/taskExcel/";
+    }
 
     public function makeTaskFile()
     {
@@ -23,11 +30,18 @@ class MakeService
 //       $record->status = 2;
 //       $record->save();
 
+
         $taskIds = $this->getTasks($recordId);
         $hands = $this->getHands($recordId);
         $handsData = $this->initHandsData($taskIds, $hands);
+
+        $dirData = $this->mkdirByTime($recordId);
         $utilService = new UtilService();
-        $utilService->makeHandsExcel($handsData, $recordId);
+        $utilService->makeHandsExcel($handsData, $dirData["worker"]);
+
+        $record->down_path = $dirData["path"];
+//        $record->status = 3;
+        $record->save();
     }
 
     /**
@@ -95,5 +109,22 @@ class MakeService
         }
 
        return $data;
+    }
+
+
+    /**
+     * 根据记录id时间创建文件夹
+     * @param $recordId
+     * @return array
+     */
+    public function mkdirByTime($recordId)
+    {
+        $dirName = $this->taskExcelPath . $recordId . date("YmdHis");
+        File::makeDirectory($dirName . "/" . "刷手", 0755, true);
+        File::makeDirectory($dirName . "/" . "商家", 0755, true);
+        File::makeDirectory($dirName . "/" . "统计", 0755, true);
+
+        return ["worker" => $dirName . "/" . "刷手" . "/", "business" => $dirName . "/" . "商家" . "/", "count" => $dirName . "/" . "统计" . "/", "path" => $dirName];
+
     }
 }
