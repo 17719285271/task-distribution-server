@@ -25,7 +25,7 @@ class TaskService
             $taskBaseInfo->phone_price = $params["phonePrice"];
             $taskBaseInfo->task_require = $params["taskRequire"];
             $taskBaseInfo->commission = $params["commission"];
-            $taskBaseInfo->create_user = 1;
+            $taskBaseInfo->create_user = session("userId");
             $taskBaseInfo->product_type = $params["productType"];
             $taskBaseInfo->img = $params["fileName"];
             $taskBaseInfo->save($params);
@@ -152,8 +152,9 @@ class TaskService
         DB::beginTransaction();
         try {
             $record = new TaskGenerationRecord;
-            $record->create_user = 1;
+            $record->create_user = session("userId");
             $record->hands_file = $params["fileName"];
+            $record->number = TaskExtendInfo::whereIn("task_id", $params["taskId"])->sum("quantity");
             $record->save();
 
             $recordTaskArray = [];
@@ -161,12 +162,13 @@ class TaskService
                 array_push($recordTaskArray, ["record_id" => $record->record_id, "task_id" => $id]);
             }
 
-            DB::table("generation_record_task")->insert($recordTaskArray);
+
             $recordHandsArray = [];
             foreach ($handsData as $handsDatum) {
                 array_push($recordHandsArray, ["record_id" => $record->record_id, "hands_name" => $handsDatum]);
             }
 
+            DB::table("generation_record_task")->insert($recordTaskArray);
             DB::table("generation_record_hands")->insert($recordHandsArray);
             DB::table("task_base_info")->whereIn("task_id", $params["taskId"])->update(["is_generation" => 1]);
         } catch (\Exception $exception) {

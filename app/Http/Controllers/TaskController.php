@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Http\Service\MakeService;
@@ -11,10 +12,13 @@ class TaskController extends Controller
 
     private $makeService;
 
+    private $taskExcelPath;
+
     public function __construct()
     {
         $this->taskService = new TaskService();
         $this->makeService = new MakeService();
+        $this->taskExcelPath = public_path() . "/taskExcel/";
     }
 
     /**
@@ -23,7 +27,8 @@ class TaskController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\Response
      */
-    public function addTask(Request $request) {
+    public function addTask(Request $request)
+    {
         if ($request->isMethod("get")) {
             return response()->view("task");
         } elseif ($request->isMethod("post")) {
@@ -42,7 +47,8 @@ class TaskController extends Controller
      * @param Request $request
      * @return mixed
      */
-    public function taskPage(Request $request) {
+    public function taskPage(Request $request)
+    {
         $params = $request->all();
         $pageData = $this->taskService->taskPage($params);
         return view("taskPage", ["pageData" => $pageData, "params" => $params]);
@@ -88,5 +94,15 @@ class TaskController extends Controller
     public function makeTaskFile()
     {
         return $this->makeService->makeTaskFile();
+    }
+
+    public function downTaskExcel(Request $request)
+    {
+        $filePath = $request->input("filePath");
+
+        if (strlen($filePath) == 0) {
+            return back()->withErrors("文件路径错误");
+        }
+        return response()->download($this->taskExcelPath . $filePath);
     }
 }

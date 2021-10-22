@@ -87,7 +87,7 @@
                     </li>
 
                     <li>
-                        <a href="javascript:;">
+                        <a onclick="xadmin.add_tab('任务分配','taskRecord')">
                             <i class="iconfont left-nav-li" lay-tips="订单管理">&#xe723;</i>
                             <cite>下载中心</cite>
                             </a>
