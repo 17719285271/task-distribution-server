@@ -40,6 +40,6 @@ class Controller extends BaseController
     {
         session()->forget($request->session()->get("userName"));
         session()->forget($request->session()->get("userId"));
-        redirect("login");
+        return redirect("login");
     }
 }
