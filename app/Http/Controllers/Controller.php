@@ -31,4 +31,15 @@ class Controller extends BaseController
         session(["userId" => $user->user_id, "userName" => $user->user_name]);
         return $this->success();
     }
+
+    /**
+     * 退出登录
+     * @param Request $request
+     */
+    public function loginOut(Request $request)
+    {
+        session()->forget($request->session()->get("userName"));
+        session()->forget($request->session()->get("userId"));
+        redirect("login");
+    }
 }

@@ -21,6 +21,8 @@ Route::middleware(["session"])->group(
             return view('index');
         });
 
+        Route::any("loginOut", "Controller@loginOut");
+
 //添加任务
         Route::any("addTask", "TaskController@addTask");
 
