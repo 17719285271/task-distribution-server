@@ -81,7 +81,7 @@ class UtilService
     {
         foreach ($handsExcelData as $kkk => $datum) {
             $objPHPExcel = new \PHPExcel();
-            $columnArray = range('A', 'Z');
+            $columnArray = $this->getColumnArray();
             $objPHPExcel->setActiveSheetIndex(0);
 
             $array = [0 => ["店铺" => 1, "价格" => 2]];
@@ -167,7 +167,7 @@ class UtilService
 
         $excelHandData = $this->initCountExcelRowArray($recordId);
         $objPHPExcel = new \PHPExcel();
-        $columnArray = range('A', 'Z');
+        $columnArray = $this->getColumnArray();
         $objPHPExcel->setActiveSheetIndex(0);
 
         foreach ($excelHandData as $excelDataKey => $excelHandDatum) {
@@ -278,4 +278,22 @@ class UtilService
         return $array;
     }
 
+    /**
+     * 获取列表头数组
+     * @return array
+     */
+    private function getColumnArray() {
+        $column = [];
+        for ($i = 0; $i <= 701; $i++) {
+            $y = ($i / 26);
+            if ($y >= 1) {
+                $y = intval($y);
+                array_push($column, chr($y+64) . chr($i-$y*26 + 65));
+            } else {
+                array_push($column, chr($i+65));
+            }
+        }
+
+        return $column;
+    }
 }
