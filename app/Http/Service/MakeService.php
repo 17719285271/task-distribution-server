@@ -41,8 +41,8 @@ class MakeService
         $utilService->makeHandsExcel($handsData, $dirData["worker"]);
         $utilService->makeCountExcel($handsData, $dirData["count"], $recordId);
         $this->zipFile($dirData["path"], $this->taskExcelPath, $dirData["zipName"]);
-//        $record->down_path = $dirData["zipName"];
-//        $record->status = 3;
+        $record->down_path = $dirData["zipName"];
+        $record->status = 3;
 
         $record->save();
     }
