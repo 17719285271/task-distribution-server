@@ -155,7 +155,7 @@
                         data: data.field,
                         dataType: 'JSON',
                         success: function (res) {
-                            if (res.code = 0) {
+                            if (res.code == 0) {
                                 layer.alert("增加成功", {
                                         icon: 6
                                     }, function () {

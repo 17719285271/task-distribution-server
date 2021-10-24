@@ -32,10 +32,10 @@
             </div>
             <ul class="layui-nav right" lay-filter="">
                 <li class="layui-nav-item">
-                    <a href="javascript:;">admin</a>
+                <a href="javascript:;">{{session("userName")}}</a>
                     <dl class="layui-nav-child">
                         <dd>
-                            <a href="./login.html">退出</a></dd>
+                            <a href="loginOut">退出</a></dd>
                     </dl>
                 </li>
                 <li class="layui-nav-item to-index">
@@ -87,7 +87,7 @@
                     </li>
 
                     <li>
-                        <a href="javascript:;">
+                        <a onclick="xadmin.add_tab('任务分配','taskRecord')">
                             <i class="iconfont left-nav-li" lay-tips="订单管理">&#xe723;</i>
                             <cite>下载中心</cite>
                             </a>

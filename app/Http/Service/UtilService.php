@@ -2,13 +2,12 @@
 
 namespace App\Http\Service;
 
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use PHPExcel_IOFactory;
 use PHPExcel_Style_Alignment;
 use PHPExcel_Style_Fill;
 use PHPExcel_Worksheet_Drawing;
-use PHPExcel_Writer_Excel2007;
 
 class UtilService
 {
@@ -94,10 +93,8 @@ class UtilService
             $allMoney = 0;
             $allCommission = 0;
             foreach ($datum as $v) {
-                $allMoney += $v["phonePrice"];
-                foreach ($v as $extendValue) {
-                    $allCommission += $extendValue["amount"];
-                }
+                $allCommission += $v["commission"];
+                $allMoney += $v["amount"];
             }
 
             $objPHPExcel->getActiveSheet()->setCellValue("B1", count($datum));
@@ -116,9 +113,9 @@ class UtilService
             $objPHPExcel->getActiveSheet()->setCellValue("F6", "商家名称");
             $objPHPExcel->getActiveSheet()->setCellValue("G6", "产品类目");
             $objPHPExcel->getActiveSheet()->setCellValue("H6", "该笔佣金");
-            $objPHPExcel->getActiveSheet()->setCellValue("H7", "单价");
-            $objPHPExcel->getActiveSheet()->getStyle('A6:H6')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-            $objPHPExcel->getActiveSheet()->getStyle('A6:H6')->getFont()->setBold(true);
+            $objPHPExcel->getActiveSheet()->setCellValue("I6", "单价");
+            $objPHPExcel->getActiveSheet()->getStyle('A6:I6')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+            $objPHPExcel->getActiveSheet()->getStyle('A6:I6')->getFont()->setBold(true);
 
             for ($t = 0; $t < 9; $t++) {
                 $objPHPExcel->getActiveSheet()->getColumnDimension($columnArray[$t])->setWidth(20);
@@ -151,6 +148,134 @@ class UtilService
             }
         }
 
+    }
+
+    /**
+     * 生成统计excel
+     * @param array $data
+     * @param $filePath
+     */
+    public function makeCountExcel(array $data, $filePath, $recordId)
+    {
+        $handsExcelData = [];
+        //拼装数据为excel左侧表头数据
+        foreach ($data as $key => $datum) {
+            $data = ["旺旺昵称" => $key, "任务编号" => $recordId];
+            $countData = $this->initCountData($datum, $data);
+            array_push($handsExcelData, $countData);
+        }
+
+        $excelHandData = $this->initCountExcelRowArray($recordId);
+        $objPHPExcel = new \PHPExcel();
+        $columnArray = range('A', 'Z');
+        $objPHPExcel->setActiveSheetIndex(0);
+
+        foreach ($excelHandData as $excelDataKey => $excelHandDatum) {
+            $excelDataKey += 1;
+            $objPHPExcel->getActiveSheet()->setCellValue("A" . $excelDataKey, $excelHandDatum);
+            $objPHPExcel->getActiveSheet()->getStyle("A" . $excelDataKey)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+            $objPHPExcel->getActiveSheet()->getStyle("A" . $excelDataKey)->getFont()->setBold(true);
+            if ($excelHandDatum == "旺旺昵称" || $excelHandDatum == "任务编号") {
+                $objPHPExcel->getActiveSheet()->getStyle("A" . $excelDataKey)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+                $objPHPExcel->getActiveSheet()->getStyle("A" . $excelDataKey)->getFill()->getStartColor()->setARGB('FFFF00');
+            }
+
+            if ($excelHandDatum == "合计单数" || $excelHandDatum == "合计货款" || $excelHandDatum == "单笔佣金" || $excelHandDatum == "合计佣金" || $excelHandDatum == "合计打款金额") {
+                $objPHPExcel->getActiveSheet()->getStyle("A" . $excelDataKey)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+                $objPHPExcel->getActiveSheet()->getStyle("A" . $excelDataKey)->getFill()->getStartColor()->setARGB('00CCFF');
+            }
+        }
+
+        foreach ($handsExcelData as $handsExcelKey => $handsExcelDatum) {
+            foreach ($excelHandData as $key => $value) {
+                $key += 1;
+                $column = $columnArray[$handsExcelKey + 1];
+                $objPHPExcel->getActiveSheet()->setCellValue($column . $key, @$handsExcelDatum[$value]);
+
+                if ($value == "任务编号") {
+                    $objPHPExcel->getActiveSheet()->getStyle($column . $key)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+                    $objPHPExcel->getActiveSheet()->getStyle($column . $key)->getFill()->getStartColor()->setARGB('339966');
+                }
+
+                if ($value == "合计单数" || $value == "合计货款" || $value == "单笔佣金" || $value == "合计佣金" || $value == "合计打款金额") {
+                    $objPHPExcel->getActiveSheet()->getStyle($column . $key)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+                    $objPHPExcel->getActiveSheet()->getStyle($column . $key)->getFill()->getStartColor()->setARGB('00CCFF');
+                }
+
+                if ($value != "合计单数" && $value != "合计货款" && $value != "单笔佣金" && $value != "合计佣金" && $value != "合计打款金额" && $value != "旺旺昵称" && $value != "任务编号") {
+                    $objPHPExcel->getActiveSheet()->getStyle($column . $key)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+                    $objPHPExcel->getActiveSheet()->getStyle($column . $key)->getFill()->getStartColor()->setARGB('CC99FF');
+                }
+            }
+        }
+
+        foreach ($excelHandData as $k => $item) {
+            $k += 1;
+            if ($k > 2 && $item != "单笔佣金") {
+                $before = "B" . $k;
+                $after = $columnArray[count($handsExcelData)] . $k;
+                $objPHPExcel->getActiveSheet()->setCellValue($columnArray[count($handsExcelData) + 1] . $k, "=SUM($before:$after)");
+            }
+        }
+
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+        $objWriter->save($filePath . $recordId . "小组统计.xlsx");
+    }
+
+    /**
+     * 初始化表格统计数据
+     * @param $data
+     * @param $countData
+     * @return mixed
+     */
+    private function initCountData($data, $countData)
+    {
+        $countData["合计货款"] = 0;
+        $countData["合计佣金"] = 0;
+        $countData["合计打款金额"] = 0;
+        $countData["单笔佣金"] = 0;
+        $countData["合计单数"] = 0;
+
+        foreach ($data as $datum) {
+            $countData["合计单数"] = count($data);
+            $countData["合计货款"] += $datum["amount"];
+            $countData["合计佣金"] += $datum["commission"];
+            $countData["合计打款金额"] = $countData["合计货款"] + $countData["合计佣金"];
+            $countData[$datum["businessName"]] = $datum["amount"];
+            $countData["单笔佣金"] = $datum["commission"];
+        }
+
+        return $countData;
+    }
+
+    /**
+     * 初始化表头填充数据
+     * @param $recordId
+     * @return string[]
+     */
+    private function initCountExcelRowArray($recordId)
+    {
+        $taskIdDataArray = DB::table("generation_record_task")->where("record_id", $recordId)->get();
+        foreach ($taskIdDataArray as $item) {
+            $taskIdArray[] = $item->task_id;
+        }
+        $taskArray = DB::table("task_base_info")->whereIn("task_id", $taskIdArray)->get();
+
+        foreach ($taskArray as $task) {
+            $businessName[] = $task->business_name;
+        }
+
+        $array = array("旺旺昵称", "任务编号");
+        foreach ($businessName as $item) {
+            array_push($array, $item);
+        }
+
+        array_push($array, "合计单数");
+        array_push($array, "合计货款");
+        array_push($array, "单笔佣金");
+        array_push($array, "合计佣金");
+        array_push($array, "合计打款金额");
+        return $array;
     }
 
 }

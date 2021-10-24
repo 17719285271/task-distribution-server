@@ -5,6 +5,7 @@ namespace App\Http\Service;
 use App\Model\TaskBaseInfo;
 use App\Model\TaskExtendInfo;
 use App\Model\TaskGenerationRecord;
+use Chumper\Zipper\Zipper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -35,12 +36,14 @@ class MakeService
         $hands = $this->getHands($recordId);
         $handsData = $this->initHandsData($taskIds, $hands);
 
-        $dirData = $this->mkdirByTime($recordId);
         $utilService = new UtilService();
+                $dirData = $this->mkdirByTime($recordId);
         $utilService->makeHandsExcel($handsData, $dirData["worker"]);
-
-        $record->down_path = $dirData["path"];
+        $utilService->makeCountExcel($handsData, $dirData["count"], $recordId);
+        $this->zipFile($dirData["path"], $this->taskExcelPath, $dirData["zipName"]);
+//        $record->down_path = $dirData["zipName"];
 //        $record->status = 3;
+
         $record->save();
     }
 
@@ -99,7 +102,7 @@ class MakeService
                     }
 
                     if (empty($data[$hands[$currentHandsNum]]) || $data[$hands[$currentHandsNum]][count($data[$hands[$currentHandsNum]]) - 1]["productType"] != $item->product_type && $data[$hands[$currentHandsNum]][count($data[$hands[$currentHandsNum]]) - 1]["businessName"] != $item->business_name) {
-                        array_push($data[$hands[$currentHandsNum]], ["num" => count($data[$hands[$currentHandsNum]]) + 1, "key" => $value->key, "img" => $item->img, "taskRequire" => $item->task_require, "phonePrice" => $item->phone_price -100 . "-" . $item->phone_price + 100, "businessName" => $item->business_name, "productType" => $item->product_type, "commission" => $item->commission, "amount" => $value["amount"]]);
+                        array_push($data[$hands[$currentHandsNum]], ["num" => count($data[$hands[$currentHandsNum]]) + 1, "key" => $value->key, "img" => $item->img, "taskRequire" => $item->task_require, "phonePrice" => $this->initPhonePriceString($item->phone_price), "businessName" => $item->business_name, "productType" => $item->product_type, "commission" => $item->commission, "amount" => $value["amount"]]);
                     }
 
                     //增加刷手键值索引
@@ -119,11 +122,42 @@ class MakeService
      */
     public function mkdirByTime($recordId)
     {
-        $dirName = $this->taskExcelPath . $recordId . date("YmdHis");
+        $str = $recordId . date("YmdHis");
+        $dirName = $this->taskExcelPath . $str;
         File::makeDirectory($dirName . "/" . "刷手", 0755, true);
         File::makeDirectory($dirName . "/" . "商家", 0755, true);
         File::makeDirectory($dirName . "/" . "统计", 0755, true);
 
-        return ["worker" => $dirName . "/" . "刷手" . "/", "business" => $dirName . "/" . "商家" . "/", "count" => $dirName . "/" . "统计" . "/", "path" => $dirName];
+        return ["worker" => $dirName . "/" . "刷手" . "/", "business" => $dirName . "/" . "商家" . "/", "count" => $dirName . "/" . "统计" . "/", "path" => $dirName, "zipName" => $str];
+    }
+
+    /**
+     * 初始化手机端价格
+     * @param $phonePrice
+     * @return string
+     */
+    private function initPhonePriceString($phonePrice)
+    {
+        $d = $phonePrice - 100;
+        if ($d < 0) {
+            $d = 0;
+        }
+
+        $a = $phonePrice + 100;
+        return $d . "-" . $a;
+    }
+
+
+    /**
+     * 压缩文件
+     * @param $path
+     * @param $toPath
+     * @throws \Exception
+     */
+    private function zipFile($path, $toPath, $zipName) {
+        $zipper = new Zipper();
+        $arr = glob($path);
+        $res = $zipper->make($toPath . $zipName . ".zip")->add($arr);
+        $res->close();
     }
 }
