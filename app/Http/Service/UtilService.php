@@ -85,6 +85,7 @@ class UtilService
             $columnArray = range('A', 'Z');
             $objPHPExcel->setActiveSheetIndex(0);
 
+            $array = [0 => ["店铺" => 1, "价格" => 2]];
             $objPHPExcel->getActiveSheet()->setCellValue("A1", "总单数");
             $objPHPExcel->getActiveSheet()->setCellValue("A2", "总本金");
             $objPHPExcel->getActiveSheet()->setCellValue("A3", "总佣金");
